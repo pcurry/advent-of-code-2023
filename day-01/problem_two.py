@@ -46,47 +46,66 @@ def tokenize_line(line):
     return processed
 
 
-def extract_first_last(tokens):
-    first = DIGITS_LOOKUP[tokens[0]]
-    last = DIGITS_LOOKUP[tokens[-1]]
+def extract_last(line):
+    """
+    Process the last digit by starting at the end of the line
+    and moving backward towards the beginning of the line.
+    """
+    print("Matching last digit")
+    for i in range(1, len(line) + 1):
+        unprocessed = line[-i:]
+        print(f"Unprocessed: {unprocessed}")
+        match = DIGITS_RE.match(unprocessed)
+        if match:
+            print("Matched")
+            print(match.groups())
+
+            return match.group(1)
+
+
+def extract_first(line):
+    unprocessed = line
+    while unprocessed:
+        print(f"Unprocessed: {unprocessed}")
+        match = DIGITS_RE.match(unprocessed)
+        if match:
+            print("Matched")
+            print(match.groups())
+
+            return match.group(1)
+        else:
+            print("Not Matched")
+            unprocessed = unprocessed[1:]
+
+    return None
+
+
+def extract_first_last(line):
+    first = DIGITS_LOOKUP[extract_first(line)]
+    last = DIGITS_LOOKUP[extract_last(line)]
     return int(first + last)
 
-
-def test_extract():
-    test1 = ["1", "4"]
-    assert extract_first_last(test1) == 14
-
-    test2 = ["5"]
-    assert extract_first_last(test2) == 55
-
-    test3 = ["seven", "4"]
-    assert extract_first_last(test3) == 74
-    
 
 def test_tokenize():
     test1 = tokenize_line("two1nine")
     assert len(test1) == 3
     assert test1[0] == "two"
     assert test1[-1] == "nine"
-    assert extract_first_last(test1) == 29
 
     test2 = tokenize_line("eightwothree")
     assert len(test2) == 2
     assert test2[0] == "eight"
     assert test2[-1] == "three"
-    assert extract_first_last(test2) == 83
 
     test3 = tokenize_line("abcone2threexyz")
     assert len(test3) == 3
     assert test3[0] == "one"
     assert test3[-1] == "three"
-    assert extract_first_last(test3) == 13
 
     test4 = tokenize_line("xtwone3four")
     assert len(test4) == 3
     assert test4[0] == "two"
     assert test4[-1] == "four"
-    
 
     test5 = tokenize_line("4nineeightseven2")
     assert len(test5) == 5
@@ -104,6 +123,11 @@ def test_tokenize():
     assert test7[-1] == "six"
 
 
+def test_extract_last():
+    result = extract_last("8ninefivegzk7ftqbceightwogfv")
+    assert result == "two"
+
+
 if __name__ == "__main__":
     calib_file = "calibration-data.txt"
     calib_lines = []
@@ -111,14 +135,11 @@ if __name__ == "__main__":
     with open(calib_file, "r") as fin:
         calib_lines = fin.readlines()
 
-    test_extract()
-    test_tokenize()
-
+    # test_tokenize()
+    # test_extract_last()
+    
     # process_line(calib_lines[0])
     line_values = [
-        extract_first_last(tokenize_line(line)) for line in calib_lines
+        extract_first_last(line) for line in calib_lines
     ]
     print(sum(line_values))
-    # print(len(processed_lines))
-    # print(sum(processed_lines))
-    
